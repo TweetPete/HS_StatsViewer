@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from collections import defaultdict
+import matplotlib.pyplot as plt
 
 def leaders(xs, top=10):
     counts = defaultdict(int)
@@ -28,19 +29,33 @@ def getOpponentStats(OpponentName='MichaELSvent'):
                 if game.find('OpponentName').text == OpponentName]
     for hero in leaders(heroList,3):
         print('-%s' % (hero[0]))
-
+        
 def getDeckList():
-    pass
+    deckList = [deck.text for deck in root.iter('DeckName') if 'Arena' not in deck.text]
+    #print(set(deckList))
+    return deckList
 
 def getBestDeck():
-    pass
+    bestDeck = 'None'
+    bestRate = 0
+    for Deck in getDeckList():
+        winList = [game.find('Result').text for game in root.iter('Game') \
+                   if game.find('DeckName').text == Deck]
+        winCount = winList.count('Win')
+        winNr = len(winList)
+        rate = winCount/winNr*100
+        
+        if rate > bestRate and winNr >10:
+            bestDeck = Deck
+            bestRate = rate
+    print('\nBest Deck: %s\nWinrate: %.2f' % (bestDeck, bestRate))
 
 def getDeckStats(DeckName = 'Kel\'step'):
     winList = [game.find('Result').text for game in root.iter('Game') \
                if game.find('DeckName').text == DeckName]
     winCount = winList.count('Win')
     
-    print('Deck Name: %s' % DeckName)
+    print('\nDeck Name: %s' % DeckName)
     print('Wins: %i/%i' % (winCount, len(winList)))
     print('Percentage: %.2f' % (winCount/len(winList)*100))
     
@@ -53,9 +68,23 @@ def getDeckStats(DeckName = 'Kel\'step'):
         winCount = heroResult.count('Win')
         print('%s - %.2f' % (hero, winCount/len(heroResult)*100))
     
-    
+def getMatchesByRank(mode = 'Wild', season = '47'): 
+    gameList = [game.find('Rank').text for game in root.iter('Game') if game.find('GameMode').text == 'Ranked' \
+     and game.find('Format').text == mode and game.find('RankedSeasonId').text == season]
+    return leaders(gameList, 26)
+
+def plotRanks(array):
+    x = [int(pair[0]) for pair in array]
+    y = [int(pair[1]) for pair in array]        
+    plt.bar(x,y)
+    plt.gca().invert_xaxis()
+    plt.show()
+            
 tree = ET.parse('xml/DeckStats.xml')
 root = tree.getroot()
 #getOpponentList()    
 #getOpponentStats()
-getDeckStats()
+#getDeckStats('Javolution')
+#getDeckList()
+#getBestDeck()
+plotRanks(getMatchesByRank('Wild','42'))
