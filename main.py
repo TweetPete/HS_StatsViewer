@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import os
 
 def leaders(xs, top=10):
     counts = defaultdict(int)
@@ -11,7 +12,7 @@ def leaders(xs, top=10):
 def getOpponentList(): #encoded because of cyrillic letters
     OpponentList = [opponent.text.encode('utf8') for opponent in root.iter('OpponentName')\
                      if opponent.text is not None]
-    for item in leaders(OpponentList, 5):
+    for item in leaders(OpponentList, 10):
         print('%s - (%i)' % (item[0], item[1]))
 
 def getOpponentStats(OpponentName='MichaELSvent'):
@@ -33,7 +34,7 @@ def getOpponentStats(OpponentName='MichaELSvent'):
 def getDeckList():
     deckList = [deck.text for deck in root.iter('DeckName') if 'Arena' not in deck.text]
     #print(set(deckList))
-    return deckList
+    return set(deckList)
 
 def getBestDeck():
     bestDeck = 'None'
@@ -80,11 +81,13 @@ def plotRanks(array):
     plt.gca().invert_xaxis()
     plt.show()
             
-tree = ET.parse('xml/DeckStats.xml')
+#tree = ET.parse('xml/DeckStats.xml')
+roamingpath = os.getenv('AppData')
+tree = ET.parse(roamingpath + '/HearthstoneDeckTracker/DeckStats.xml')
 root = tree.getroot()
 #getOpponentList()    
-#getOpponentStats()
-#getDeckStats('Javolution')
-#getDeckList()
+getOpponentStats()
+#getDeckStats('Kel\'step')
+#print(getDeckList())
 #getBestDeck()
-plotRanks(getMatchesByRank('Wild','42'))
+#plotRanks(getMatchesByRank('Wild','47'))
